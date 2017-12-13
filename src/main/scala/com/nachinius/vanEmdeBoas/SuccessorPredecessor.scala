@@ -8,7 +8,7 @@ trait SuccessorPredecessor {
   type T
   type Set
   def successor(x: T): Option[T]
-  def predecessor(x: T): Option[T] = successor(x) // @TODO
+  def predecessor(x: T): Option[T] = None  // @TODO
 }
 
 trait Membership[T] {
@@ -52,6 +52,7 @@ class vEB(bits: Int) extends vanEmdeBoas {
   }
 
   val summary: vanEmdeBoas = vanEmdeBoas(halfbits)
+  // using a hash table for cluster, we only store non empty ones
   val cluster: mutable.Map[Upper,vanEmdeBoas] = mutable.Map()
 
   def getUpper: Int => Upper = x => Upper(x >>> halfbits)
