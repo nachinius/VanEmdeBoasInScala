@@ -10,3 +10,5 @@ libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.4" % "test"
 val scalaCheckVersion = "1.13.4"
 libraryDependencies += "org.scalacheck" %% "scalacheck" % scalaCheckVersion
 libraryDependencies += "org.scalacheck" %% "scalacheck" % scalaCheckVersion % "test"
+
+coverageEnabled := true
