@@ -17,6 +17,10 @@ trait Membership[T] {
 }
 
 object vanEmdeBoas {
+  /**
+    * @param bits Bits used to store the numbers (w = log u). Numbers allowed will be in range
+    *             [0,1,...,2^bits-1]
+    */
   def apply[T](bits: Int): vanEmdeBoas = {
     if(bits == 1) new vEBSmall() else new vEB(bits)
   }
@@ -25,6 +29,7 @@ object vanEmdeBoas {
 case class Upper(value: Int) extends AnyVal
 case class Lower(value: Int) extends AnyVal
 
+// @mutable
 abstract class vanEmdeBoas extends Membership[Int] with Traversable[Int] with SuccessorPredecessor {
   type T = Int
   var min: Option[Int] = None
@@ -51,7 +56,8 @@ class vEB(bits: Int) extends vanEmdeBoas {
     }
   }
 
-  val summary: vanEmdeBoas = vanEmdeBoas(halfbits)
+  // don't use space for empty summaries
+  lazy val summary: vanEmdeBoas = vanEmdeBoas(halfbits)
   // using a hash table for cluster, we only store non empty ones
   val cluster: mutable.Map[Upper,vanEmdeBoas] = mutable.Map()
 
