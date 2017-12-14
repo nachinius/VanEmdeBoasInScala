@@ -41,13 +41,15 @@ abstract class vanEmdeBoas extends Membership[Int] with Traversable[Int] with Su
 class vEB(bits: Int) extends vanEmdeBoas {
   val maxNumber = (1 << bits)-1
   val minNumber = 0
-  val halfbits: Int = bits / 2
-  val lowerbits: Int = bits - bits / 2
+  val halfbits: Int = math.ceil(0.5 * bits.toDouble).intValue()
+  val lowerbits: Int = bits - halfbits
   require(halfbits + lowerbits == bits)
   require(bits>1)
+  require(lowerbits > 0)
+  require(maxNumber > 0)
 
   override def foreach[U](f: T => U): Unit = {
-    min.fold() { min =>
+    min.fold({}) { min =>
       f(min)
       cluster.foreach {
         case (z @ Upper(v) , boas: Set) =>

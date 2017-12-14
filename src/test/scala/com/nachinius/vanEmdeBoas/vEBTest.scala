@@ -41,7 +41,7 @@ class vEBTest extends FreeSpec with Matchers {
       val seed = 1
       val rnd = new Random(seed)
 
-      val original = (1 to 1000).map(_ => rnd.nextInt(veb.maxNumber+1))
+      val original = (1 to 1000).map(_ => rnd.nextInt(veb.maxNumber))
       val lst = rnd.shuffle(original)
       lst foreach veb.insert
 
@@ -49,6 +49,22 @@ class vEBTest extends FreeSpec with Matchers {
       (0 to 100).toList.diff(original).map(veb.member) should not contain (true)
     }
 
+    "maxNumber" in {
+      val veb = vanEmdeBoas(8)
+      veb.maxNumber shouldBe 2*2*2*2*2*2*2*2-1
+      vanEmdeBoas(4).maxNumber shouldBe 15
+      vanEmdeBoas(16).maxNumber shouldBe (1<<16)-1
+      vanEmdeBoas(16).maxNumber should be > 0
+      vanEmdeBoas(12).maxNumber should be > 0
+      vanEmdeBoas(21).maxNumber should be > 0
+      vanEmdeBoas(5).maxNumber should be > 0
+      vanEmdeBoas(30).maxNumber should be > 0
+    }
+
+    "bits" in {
+      new vEB(5).halfbits shouldBe 3
+      new vEB(5).lowerbits shouldBe 2
+    }
 
   }
 }
