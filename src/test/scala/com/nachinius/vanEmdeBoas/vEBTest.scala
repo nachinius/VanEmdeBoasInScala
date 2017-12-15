@@ -2,6 +2,7 @@ package com.nachinius.vanEmdeBoas
 
 import org.scalatest.{FreeSpec, Matchers}
 
+import scala.collection.mutable
 import scala.util.Random
 
 class vEBTest extends FreeSpec with Matchers {
@@ -106,6 +107,28 @@ class vEBTest extends FreeSpec with Matchers {
         }
 
       }
+    }
+
+    "foreach" - {
+      "must walk all numbers" in {
+        val seed: Long = 12758345
+        val numbersToInsert = 1000
+        val rnd = new Random(seed)
+        val veb = vanEmdeBoas(16)
+        val numbers = ((0 to 255) ++ (1 to numbersToInsert).map(_ => rnd.nextInt(veb.maxNumber))).distinct
+        // insert
+        numbers.foreach(veb.insert)
+        // collect
+        val result = mutable.ArrayBuffer[Int]()
+        veb.foreach(x => result += x)
+        // compare
+        result.sorted should be (result.distinct.sorted)
+        val diff = numbers.toSet.diff(result.toSet)
+        diff shouldBe empty
+        val diff2 = result.toSet.diff(numbers.toSet)
+        diff2 shouldBe empty
+      }
+
     }
 
 

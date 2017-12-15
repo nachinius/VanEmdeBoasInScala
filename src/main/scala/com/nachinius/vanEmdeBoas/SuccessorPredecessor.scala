@@ -150,9 +150,9 @@ class vEBSmall() extends vanEmdeBoas {
 
   override def foreach[U](f: T => U): Unit = {
     if(min.isDefined) {
-      f(min)
+      f(min.get)
       if(max.isDefined && max.get != min.get) {
-        f(max)
+        f(max.get)
       }
     }
   }
