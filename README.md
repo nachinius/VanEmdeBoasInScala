@@ -1,9 +1,10 @@
 [![Build Status](https://travis-ci.org/nachinius/van_emde_boas_in_scala.svg?branch=master)](https://travis-ci.org/nachinius/van_emde_boas_in_scala)
 [![Coverage Status](https://coveralls.io/repos/github/nachinius/van_emde_boas_in_scala/badge.svg)](https://coveralls.io/github/nachinius/van_emde_boas_in_scala)
+[![Join the chat at https://gitter.im/nachinius/van_emde_boas_in_scala](https://badges.gitter.im/nachinius/van_emde_boas_in_scala.svg)](https://gitter.im/nachinius/van_emde_boas_in_scala?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 # van Emde Boas Tree in scala
 #### a fast successor for integers set
 
-[![Join the chat at https://gitter.im/nachinius/van_emde_boas_in_scala](https://badges.gitter.im/nachinius/van_emde_boas_in_scala.svg)](https://gitter.im/nachinius/van_emde_boas_in_scala?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 An implementation of van Emde Boas Tree data structure in scala.
 
 ###### may be TODO
