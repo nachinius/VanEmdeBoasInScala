@@ -1,14 +1,13 @@
 package com.nachinius.vanEmdeBoas
 
 import scala.collection.mutable
-import scala.language.higherKinds
 
 trait SuccessorPredecessor {
 
   type T
   type Set
   def successor(x: T): Option[T]
-  def predecessor(x: T): Option[T] = None  // @TODO
+//  def predecessor(x: T): Option[T]
 }
 
 trait Membership[T] {
@@ -39,6 +38,7 @@ abstract class vanEmdeBoas extends Membership[Int] with Traversable[Int] with Su
 }
 
 class vEB(bits: Int) extends vanEmdeBoas {
+
   val maxNumber = (1 << bits)-1
   val minNumber = 0
   val halfbits: Int = math.ceil(0.5 * bits.toDouble).intValue()
@@ -46,14 +46,18 @@ class vEB(bits: Int) extends vanEmdeBoas {
   require(halfbits + lowerbits == bits)
   require(bits>1)
   require(lowerbits > 0)
-  require(maxNumber > 0)
+  require(maxNumber > 0) // avoid overflow of the number
+
+  override def toString(): String = {
+    s"vEB($bits($halfbits++$lowerbits)=>[$minNumber,$maxNumber],,,clusters=${cluster.size}"
+  }
 
   override def foreach[U](f: T => U): Unit = {
     min.fold({}) { min =>
       f(min)
       cluster.foreach {
         case (z @ Upper(v) , boas: Set) =>
-          boas.foreach(f)
+          boas.foreach(x => f(v * (1<<lowerbits) + x))
       }
     }
   }
@@ -63,12 +67,16 @@ class vEB(bits: Int) extends vanEmdeBoas {
   // using a hash table for cluster, we only store non empty ones
   val cluster: mutable.Map[Upper,vanEmdeBoas] = mutable.Map()
 
-  def getUpper: Int => Upper = x => Upper(x >>> halfbits)
-  def getLower: Int => Lower = x => Lower(x & ((1 << halfbits) - 1))
+  def getUpper: Int => Upper = x => Upper(x >>> lowerbits)
+  def getLower: Int => Lower = x => Lower(x & ((1 << lowerbits) - 1))
   def expr: Int => (Upper,Lower) = x => (getUpper(x),getLower(x))
-  def toNumber(c: Upper, l: Lower): Int = (c.value << halfbits) | l.value
+  def toNumber(c: Upper, l: Lower): Int = (c.value << lowerbits) | l.value
 
   override def insert(x: T): Set = {
+    if(x>maxNumber) {
+      val message = s"$x is out of bounds (max=$maxNumber) from bits=$bits"
+      throw new IllegalArgumentException("requirement failed: "+ message)
+    }
     if(min.isEmpty) { // vEb is empty, very few to do and no recursions
       min = Some(x)
       max = Some(x)
@@ -88,7 +96,7 @@ class vEB(bits: Int) extends vanEmdeBoas {
 
       val (c,i) = expr(y)
       if(cluster.get(c).isEmpty) {
-        cluster += (c -> vanEmdeBoas(bits/2))
+        cluster += (c -> vanEmdeBoas(lowerbits))
         summary.insert(c.value)
       }
       cluster.get(c).foreach( _.insert(i.value) )

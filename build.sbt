@@ -42,7 +42,7 @@ lazy val basic = Project(
     scalacOptions ++= Seq("-deprecation", "-unchecked", "-feature", "-Xlint"),
     publishArtifact := false,
     libraryDependencies ++= Seq(
-      "com.storm-enroute" %% "scalameter" % "0.8.2" % "bench" // ScalaMeter version is set in version.sbt
+      "com.storm-enroute" %% "scalameter" % "0.8.2" % "bench"
     ),
     resolvers ++= Seq(
       "Sonatype OSS Snapshots" at "https://oss.sonatype.org/content/repositories/snapshots",
