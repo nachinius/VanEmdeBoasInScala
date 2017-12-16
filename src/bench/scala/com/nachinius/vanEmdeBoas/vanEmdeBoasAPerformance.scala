@@ -1,5 +1,6 @@
 package com.nachinius.vanEmdeBoas
 
+import com.nachinius.vanEmdeBoas.versionA.vanEmdeBoasA
 import org.scalameter.api
 import org.scalameter.api._
 

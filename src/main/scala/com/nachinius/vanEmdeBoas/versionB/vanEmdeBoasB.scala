@@ -1,4 +1,6 @@
-package com.nachinius.vanEmdeBoas
+package com.nachinius.vanEmdeBoas.versionB
+
+import com.nachinius.vanEmdeBoas.{Lower, Upper, vanEmdeBoas}
 
 import scala.collection.mutable
 
@@ -12,17 +14,11 @@ object vanEmdeBoasB {
   }
 }
 
+abstract class vanEmdeBoasB extends vanEmdeBoas
 
-// @mutable
-abstract class vanEmdeBoasB extends Membership[Int] with Traversable[Int] with SuccessorPredecessor {
-  type T = Int
-  var min: Option[Int] = None
-  var max: Option[Int] = None
-  type Set = vanEmdeBoasB
-  val maxNumber: Int
-}
 
-class vEBB(bits: Int) extends vanEmdeBoasB {
+
+class vEBB(override val bits: Int) extends vanEmdeBoasB {
 
   val maxNumber = (1 << bits)-1
   val minNumber = 0
@@ -48,14 +44,10 @@ class vEBB(bits: Int) extends vanEmdeBoasB {
   }
 
   // don't use space for empty summaries
-  lazy val summary: vanEmdeBoasB = vanEmdeBoasB(halfbits)
+  lazy val summary: vanEmdeBoas = vanEmdeBoasB(halfbits)
   // using a hash table for cluster, we only store non empty ones
-  val cluster: mutable.Map[Upper,vanEmdeBoasB] = mutable.Map()
+  val cluster: mutable.Map[Upper,vanEmdeBoas] = mutable.Map()
 
-  def getUpper: Int => Upper = x => Upper(x >>> lowerbits)
-  def getLower: Int => Lower = x => Lower(x & ((1 << lowerbits) - 1))
-  def expr: Int => (Upper,Lower) = x => (getUpper(x),getLower(x))
-  def toNumber(c: Upper, l: Lower): Int = (c.value << lowerbits) | l.value
 
   override def insert(x: T): Set = {
     if(x>maxNumber) {
@@ -96,7 +88,7 @@ class vEBB(bits: Int) extends vanEmdeBoasB {
       else if(max.nonEmpty && max.get < x) false
       else {
         val (c, l) = expr(x)
-        cluster.get(c).fold(false)((b: vanEmdeBoasB) => b.member(l.value))
+        cluster.get(c).fold(false)((b: vanEmdeBoas) => b.member(l.value))
       }
   }
 
@@ -128,6 +120,9 @@ class vEBB(bits: Int) extends vanEmdeBoasB {
 
 class vEBSmallB() extends vanEmdeBoasB {
 
+  override val bits: Int = 1
+  override val halfbits: Int = 0
+  override val lowerbits: Int = 1
   override val maxNumber: Int = 1
 
   override def successor(x: Int): Option[Int] =

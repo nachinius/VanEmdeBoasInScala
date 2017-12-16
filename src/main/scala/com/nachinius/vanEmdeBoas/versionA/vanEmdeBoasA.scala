@@ -1,4 +1,6 @@
-package com.nachinius.vanEmdeBoas
+package com.nachinius.vanEmdeBoas.versionA
+
+import com.nachinius.vanEmdeBoas.{Lower, Upper, vanEmdeBoas}
 
 import scala.collection.mutable
 
@@ -14,15 +16,9 @@ object vanEmdeBoasA {
 
 
 // @mutable
-abstract class vanEmdeBoasA extends Membership[Int] with Traversable[Int] with SuccessorPredecessor {
-  type T = Int
-  var min: Option[Int] = None
-  var max: Option[Int] = None
-  type Set = vanEmdeBoasA
-  val maxNumber: Int
-}
+abstract class vanEmdeBoasA extends vanEmdeBoas
 
-class vEBA(bits: Int) extends vanEmdeBoasA {
+class vEBA(override val bits: Int) extends vanEmdeBoasA {
 
   val maxNumber = (1 << bits)-1
   val minNumber = 0
@@ -32,6 +28,11 @@ class vEBA(bits: Int) extends vanEmdeBoasA {
   require(bits>1)
   require(lowerbits > 0)
   require(maxNumber > 0) // avoid overflow of the number
+
+  // don't use space for empty summaries
+  lazy val summary: vanEmdeBoas = vanEmdeBoasA(halfbits)
+  // using a hash table for cluster, we only store non empty ones
+  val cluster: mutable.Map[Upper,vanEmdeBoasA] = mutable.Map()
 
   override def toString(): String = {
     s"vEB($bits($halfbits++$lowerbits)=>[$minNumber,$maxNumber],,,clusters=${cluster.size}"
@@ -47,15 +48,6 @@ class vEBA(bits: Int) extends vanEmdeBoasA {
     }
   }
 
-  // don't use space for empty summaries
-  lazy val summary: vanEmdeBoasA = vanEmdeBoasA(halfbits)
-  // using a hash table for cluster, we only store non empty ones
-  val cluster: mutable.Map[Upper,vanEmdeBoasA] = mutable.Map()
-
-  def getUpper: Int => Upper = x => Upper(x >>> lowerbits)
-  def getLower: Int => Lower = x => Lower(x & ((1 << lowerbits) - 1))
-  def expr: Int => (Upper,Lower) = x => (getUpper(x),getLower(x))
-  def toNumber(c: Upper, l: Lower): Int = (c.value << lowerbits) | l.value
 
   override def insert(x: T): Set = {
     if(x>maxNumber) {
@@ -128,6 +120,9 @@ class vEBA(bits: Int) extends vanEmdeBoasA {
 
 class vEBSmallA() extends vanEmdeBoasA {
 
+  override val bits: Int = 1
+  override val halfbits: Int = 0
+  override val lowerbits: Int = 1
   override val maxNumber: Int = 1
 
   override def successor(x: Int): Option[Int] =

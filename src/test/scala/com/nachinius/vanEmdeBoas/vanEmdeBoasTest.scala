@@ -5,27 +5,28 @@ import org.scalatest.{FreeSpec, Matchers}
 import scala.collection.mutable
 import scala.util.Random
 
-class vanEmdeBoasATest extends FreeSpec with Matchers {
+trait vanEmdeBoasTest extends FreeSpec with Matchers {
+  def constructorVanEmdeBoas: Int => vanEmdeBoas
 
   "Methods tests" - {
 
     "construction of odd bits vEB should work" in {
-      new vEBA(5).halfbits shouldBe 3
-      new vEBA(5).lowerbits shouldBe 2
+      constructorVanEmdeBoas(5).halfbits shouldBe 3
+      constructorVanEmdeBoas(5).lowerbits shouldBe 2
     }
     "maxNumber" in {
-      val veb = vanEmdeBoasA(8)
+      val veb = constructorVanEmdeBoas(8)
       veb.maxNumber shouldBe 2*2*2*2*2*2*2*2-1
-      vanEmdeBoasA(4).maxNumber shouldBe 15
-      vanEmdeBoasA(16).maxNumber shouldBe (1<<16)-1
-      vanEmdeBoasA(16).maxNumber should be > 0
-      vanEmdeBoasA(12).maxNumber should be > 0
-      vanEmdeBoasA(21).maxNumber should be > 0
-      vanEmdeBoasA(5).maxNumber should be > 0
-      vanEmdeBoasA(30).maxNumber should be > 0
+      constructorVanEmdeBoas(4).maxNumber shouldBe 15
+      constructorVanEmdeBoas(16).maxNumber shouldBe (1<<16)-1
+      constructorVanEmdeBoas(16).maxNumber should be > 0
+      constructorVanEmdeBoas(12).maxNumber should be > 0
+      constructorVanEmdeBoas(21).maxNumber should be > 0
+      constructorVanEmdeBoas(5).maxNumber should be > 0
+      constructorVanEmdeBoas(30).maxNumber should be > 0
     }
     "member" in {
-      val veb = vanEmdeBoasA(8)
+      val veb = constructorVanEmdeBoas(8)
       val seed = 1
       val rnd = new Random(seed)
 
@@ -38,7 +39,7 @@ class vanEmdeBoasATest extends FreeSpec with Matchers {
     }
 
     "insert" in {
-      val a = vanEmdeBoasA(8)
+      val a = constructorVanEmdeBoas(8)
       assert(a.insert(3).member(3))
       assert(a.insert(4).member(3))
       assert(a.member(4))
@@ -49,9 +50,7 @@ class vanEmdeBoasATest extends FreeSpec with Matchers {
     "lowerbits && upperbits" - {
       "when bits are odd" - {
         "must shield correct value" in {
-          val v = new vEBA(5)
-          v.halfbits should be (3)
-          v.lowerbits should be (2)
+          val v = constructorVanEmdeBoas(5)
           v.expr(20) should be ((Upper(5),Lower(0)))
           v.expr(21) should be ((Upper(5),Lower(1)))
           v.expr(22) should be ((Upper(5),Lower(2)))
@@ -65,7 +64,7 @@ class vanEmdeBoasATest extends FreeSpec with Matchers {
     "successor" - {
       "should shield the following integer in set" - {
         def successorTest(bits: Int): Any = {
-          val veb = vanEmdeBoasA(bits)
+          val veb = constructorVanEmdeBoas(bits)
           val seed: Long = 123423
           val rnd = new Random(seed)
           val original = List(2, 5, 8, 12, 16, 20, 24, 30, 31, 32, 33, 50, 54)
@@ -91,7 +90,7 @@ class vanEmdeBoasATest extends FreeSpec with Matchers {
         }
 
         "when bits are odd" in {
-          val veb = vanEmdeBoasA(10)
+          val veb = constructorVanEmdeBoas(10)
           veb.insert(20)
           veb.insert(24)
           veb.insert(10)
@@ -114,7 +113,7 @@ class vanEmdeBoasATest extends FreeSpec with Matchers {
         val seed: Long = 12758345
         val numbersToInsert = 1000
         val rnd = new Random(seed)
-        val veb = vanEmdeBoasA(16)
+        val veb = constructorVanEmdeBoas(16)
         val numbers = ((0 to 255) ++ (1 to numbersToInsert).map(_ => rnd.nextInt(veb.maxNumber))).distinct
         // insert
         numbers.foreach(veb.insert)
@@ -134,4 +133,5 @@ class vanEmdeBoasATest extends FreeSpec with Matchers {
 
 
   }
+
 }
