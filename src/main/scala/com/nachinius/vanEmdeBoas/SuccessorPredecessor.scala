@@ -13,3 +13,5 @@ trait Membership[T] {
   def member(x: T): Boolean
 }
 
+case class Upper(value: Int) extends AnyVal
+case class Lower(value: Int) extends AnyVal

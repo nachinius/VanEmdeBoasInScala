@@ -2,27 +2,27 @@ package com.nachinius.vanEmdeBoas
 
 import scala.collection.mutable
 
-object vanEmdeBoasA {
+object vanEmdeBoasB {
   /**
     * @param bits Bits used to store the numbers (w = log u). Numbers allowed will be in range
     *             [0,1,...,2^bits-1]
     */
-  def apply[T](bits: Int): vanEmdeBoasA = {
-    if(bits == 1) new vEBSmallA() else new vEBA(bits)
+  def apply[T](bits: Int): vanEmdeBoasB = {
+    if(bits == 1) new vEBSmallB() else new vEBB(bits)
   }
 }
 
 
 // @mutable
-abstract class vanEmdeBoasA extends Membership[Int] with Traversable[Int] with SuccessorPredecessor {
+abstract class vanEmdeBoasB extends Membership[Int] with Traversable[Int] with SuccessorPredecessor {
   type T = Int
   var min: Option[Int] = None
   var max: Option[Int] = None
-  type Set = vanEmdeBoasA
+  type Set = vanEmdeBoasB
   val maxNumber: Int
 }
 
-class vEBA(bits: Int) extends vanEmdeBoasA {
+class vEBB(bits: Int) extends vanEmdeBoasB {
 
   val maxNumber = (1 << bits)-1
   val minNumber = 0
@@ -48,9 +48,9 @@ class vEBA(bits: Int) extends vanEmdeBoasA {
   }
 
   // don't use space for empty summaries
-  lazy val summary: vanEmdeBoasA = vanEmdeBoasA(halfbits)
+  lazy val summary: vanEmdeBoasB = vanEmdeBoasB(halfbits)
   // using a hash table for cluster, we only store non empty ones
-  val cluster: mutable.Map[Upper,vanEmdeBoasA] = mutable.Map()
+  val cluster: mutable.Map[Upper,vanEmdeBoasB] = mutable.Map()
 
   def getUpper: Int => Upper = x => Upper(x >>> lowerbits)
   def getLower: Int => Lower = x => Lower(x & ((1 << lowerbits) - 1))
@@ -81,7 +81,7 @@ class vEBA(bits: Int) extends vanEmdeBoasA {
 
       val (c,i) = expr(y)
       if(cluster.get(c).isEmpty) {
-        cluster += (c -> vanEmdeBoasA(lowerbits))
+        cluster += (c -> vanEmdeBoasB(lowerbits))
         summary.insert(c.value)
       }
       cluster.get(c).foreach( _.insert(i.value) )
@@ -96,7 +96,7 @@ class vEBA(bits: Int) extends vanEmdeBoasA {
       else if(max.nonEmpty && max.get < x) false
       else {
         val (c, l) = expr(x)
-        cluster.get(c).fold(false)((b: vanEmdeBoasA) => b.member(l.value))
+        cluster.get(c).fold(false)((b: vanEmdeBoasB) => b.member(l.value))
       }
   }
 
@@ -126,7 +126,7 @@ class vEBA(bits: Int) extends vanEmdeBoasA {
 }
 
 
-class vEBSmallA() extends vanEmdeBoasA {
+class vEBSmallB() extends vanEmdeBoasB {
 
   override val maxNumber: Int = 1
 
