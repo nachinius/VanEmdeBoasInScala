@@ -15,7 +15,6 @@ An implementation of van Emde Boas Tree data structure in scala.
 - [ ] Improve usage of generators for performance tests 
 - [ ] Implement for any Type
 - [ ] Use scalaCheck for defining properties
-
 ### References
 [1] MIT 6.851 Advanced Data Structures
 
