@@ -1,6 +1,6 @@
 package com.nachinius.vanEmdeBoas
 
-import com.nachinius.vanEmdeBoas.versionA.vanEmdeBoasA
+import com.nachinius.vanEmdeBoas.versionA.VersionA
 import org.scalameter.api
 import org.scalameter.api._
 
@@ -28,7 +28,7 @@ trait vanEmdeBoasAMemory extends Bench.OfflineReport {
     measure method "memory footprint vs n" in {
       using(gen) in {
         case (bit, size) =>
-          val veb = vanEmdeBoasA(bit)
+          val veb = VersionA(bit)
           (1 to size).map(_ => rnd.nextInt(veb.maxNumber)).foreach(veb.insert)
           veb
       }
@@ -47,14 +47,14 @@ trait vanEmdeBoasAPerformance extends Bench.OfflineReport {
     val data: Gen[immutable.IndexedSeq[Int]] = for {
       size <- sizes
     } yield (0 until size).map(_ => rnd.nextInt(maxInt))
-    val genvEB: Gen[vanEmdeBoasA] = for {
+    val genvEB: Gen[VersionA] = for {
       dt <- data
-    } yield dt.foldLeft(vanEmdeBoasA(bits)) {
-      case (boas: vanEmdeBoasA, i: Int) =>
+    } yield dt.foldLeft(VersionA(bits)) {
+      case (boas: VersionA, i: Int) =>
         boas.insert(i)
         boas
     }
-    val genvEBAndListToSearch: Gen[(vanEmdeBoasA, immutable.IndexedSeq[Int])] = for {
+    val genvEBAndListToSearch: Gen[(VersionA, immutable.IndexedSeq[Int])] = for {
       dt <- genvEB
       elem = (1 to searchN).map(_ => rnd.nextInt(maxInt))
     } yield (dt,elem)
@@ -62,7 +62,7 @@ trait vanEmdeBoasAPerformance extends Bench.OfflineReport {
     measure method "insert vs n" in {
       using(data) in {
         lst =>
-          val a = vanEmdeBoasA(bits)
+          val a = VersionA(bits)
           lst.foreach {
             x => a.insert(x)
           }
@@ -83,14 +83,14 @@ trait vanEmdeBoasAPerformance extends Bench.OfflineReport {
       val searches: Int = 1
       val rnd = new Random(seed)
       val bits = Gen.range("bits")(4,30,1)
-      val genBoas: Gen[vanEmdeBoasA] = for {
+      val genBoas: Gen[VersionA] = for {
         bit <- bits
-        veb = vanEmdeBoasA(bit)
+        veb = VersionA(bit)
         lst = (1 to n).map(_ => rnd.nextInt(veb.maxNumber)).distinct
       } yield lst.foldLeft(veb) {
-        case (boas: vanEmdeBoasA, i: Int) => boas.insert(i);boas
+        case (boas: VersionA, i: Int) => boas.insert(i);boas
       }
-      val genBoasWithSearchData: Gen[(vanEmdeBoasA, immutable.IndexedSeq[Int])] = for {
+      val genBoasWithSearchData: Gen[(VersionA, immutable.IndexedSeq[Int])] = for {
         boas <- genBoas
         elem = (1 to searches).map(_ => rnd.nextInt(boas.maxNumber))
       } yield (boas, elem)

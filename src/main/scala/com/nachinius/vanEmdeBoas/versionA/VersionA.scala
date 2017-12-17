@@ -1,24 +1,24 @@
-package com.nachinius.vanEmdeBoas.versionB
+package com.nachinius.vanEmdeBoas.versionA
 
 import com.nachinius.vanEmdeBoas.{Lower, Upper, vanEmdeBoas}
 
 import scala.collection.mutable
 
-object vanEmdeBoasB {
+object VersionA {
   /**
     * @param bits Bits used to store the numbers (w = log u). Numbers allowed will be in range
     *             [0,1,...,2^bits-1]
     */
-  def apply[T](bits: Int): vanEmdeBoasB = {
-    if(bits == 1) new vEBSmallB() else new vEBB(bits)
+  def apply[T](bits: Int): VersionA = {
+    if(bits == 1) new SmallVEBVersionA() else new BigVEBVersionA(bits)
   }
 }
 
-abstract class vanEmdeBoasB extends vanEmdeBoas
 
+// @mutable
+abstract class VersionA extends vanEmdeBoas
 
-
-class vEBB(override val bits: Int) extends vanEmdeBoasB {
+class BigVEBVersionA(override val bits: Int) extends VersionA {
 
   val maxNumber = (1 << bits)-1
   val minNumber = 0
@@ -28,6 +28,11 @@ class vEBB(override val bits: Int) extends vanEmdeBoasB {
   require(bits>1)
   require(lowerbits > 0)
   require(maxNumber > 0) // avoid overflow of the number
+
+  // don't use space for empty summaries
+  lazy val summary: vanEmdeBoas = VersionA(halfbits)
+  // using a hash table for cluster, we only store non empty ones
+  val cluster: mutable.Map[Upper,VersionA] = mutable.Map()
 
   override def toString(): String = {
     s"vEB($bits($halfbits++$lowerbits)=>[$minNumber,$maxNumber],,,clusters=${cluster.size}"
@@ -43,40 +48,39 @@ class vEBB(override val bits: Int) extends vanEmdeBoasB {
     }
   }
 
-  // don't use space for empty summaries
-  lazy val summary: vanEmdeBoas = vanEmdeBoasB(halfbits)
-  // using a hash table for cluster, we only store non empty ones
-  val cluster: mutable.Map[Upper,vanEmdeBoas] = mutable.Map()
-
+  def insertIntoMinAndMax(t: T): Unit = {
+    min = Some(t)
+    max = Some(t)
+  }
 
   override def insert(x: T): Set = {
     if(x>maxNumber) {
       val message = s"$x is out of bounds (max=$maxNumber) from bits=$bits"
       throw new IllegalArgumentException("requirement failed: "+ message)
     }
-    if(min.isEmpty) { // vEb is empty, very few to do and no recursions
-      min = Some(x)
-      max = Some(x)
-    } else {
+    min.filterNot(
+      // don't do doble insert
+      minValue => x == minValue
+    ).fold(
+      // no minimum, first set of min (and max)
+      insertIntoMinAndMax(x)
+    ) {
+      minValue =>
+        // swap x & minValue if necessary
+        val (nextMinValue, pushValue) = if(x<minValue) (x,minValue) else (minValue, x)
+        min = Some(nextMinValue)
 
-      val minimum = min.get
-      var y: T = x
-      if(y < minimum) {
-        // swap x <-> minm
-        y = minimum
-        min = Some(x)
-      }
+        // new max
+        max = max.map(prev => if(prev<pushValue) pushValue else prev)
 
-      if(y > max.get) {
-        max = Some(y)
-      }
-
-      val (c,i) = expr(y)
-      if(cluster.get(c).isEmpty) {
-        cluster += (c -> vanEmdeBoasB(lowerbits))
-        summary.insert(c.value)
-      }
-      cluster.get(c).foreach( _.insert(i.value) )
+        val (c,i) = expr(pushValue)
+        // create cluster if necessary and add to summary
+        if (cluster.get(c).isEmpty) {
+          cluster += (c -> VersionA(lowerbits))
+          summary.insert(c.value)
+        }
+        // recurse for insertion
+        cluster.get(c).foreach(_.insert(i.value))
     }
     this
   }
@@ -88,7 +92,7 @@ class vEBB(override val bits: Int) extends vanEmdeBoasB {
       else if(max.nonEmpty && max.get < x) false
       else {
         val (c, l) = expr(x)
-        cluster.get(c).fold(false)((b: vanEmdeBoas) => b.member(l.value))
+        cluster.get(c).fold(false)((b: VersionA) => b.member(l.value))
       }
   }
 
@@ -118,7 +122,7 @@ class vEBB(override val bits: Int) extends vanEmdeBoasB {
 }
 
 
-class vEBSmallB() extends vanEmdeBoasB {
+class SmallVEBVersionA() extends VersionA {
 
   override val bits: Int = 1
   override val halfbits: Int = 0

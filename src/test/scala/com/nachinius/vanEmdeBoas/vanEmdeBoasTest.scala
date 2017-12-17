@@ -2,7 +2,7 @@ package com.nachinius.vanEmdeBoas
 
 import org.scalatest.{FreeSpec, Matchers}
 
-import scala.collection.mutable
+import scala.collection.{immutable, mutable}
 import scala.util.Random
 
 trait vanEmdeBoasTest extends FreeSpec with Matchers {
@@ -30,11 +30,11 @@ trait vanEmdeBoasTest extends FreeSpec with Matchers {
       val seed = 1
       val rnd = new Random(seed)
 
-      val original = (1 to 1000).map(_ => rnd.nextInt(veb.maxNumber))
+      val original: immutable.Seq[Int] = (1 to 1000).map(_ => rnd.nextInt(veb.maxNumber)).distinct
       val lst = rnd.shuffle(original)
       lst foreach veb.insert
 
-      (original map veb.member) should not contain (false)
+      (original map veb.member) shouldBe (original map { _ => true})
       (0 to 100).toList.diff(original).map(veb.member) should not contain (true)
     }
 

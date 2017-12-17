@@ -4,6 +4,6 @@ import com.nachinius.vanEmdeBoas.{vanEmdeBoas, vanEmdeBoasTest}
 
 class versionATest extends vanEmdeBoasTest {
   override def constructorVanEmdeBoas: Int => vanEmdeBoas = {
-    vanEmdeBoasA(_)
+    VersionA(_)
   }
 }
