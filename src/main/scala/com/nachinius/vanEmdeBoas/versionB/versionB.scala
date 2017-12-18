@@ -98,7 +98,6 @@ case class Main[S <: vanEmdeBoas](
       value <- cluster match {
         case Main(_,m,_,_,_) => Some(m)
         case SingleBit(m,_,_) => Some(m)
-        case Empty(_) => None
         case _ => None
       }
     } yield toNumber(Upper(idx), Lower(value))
