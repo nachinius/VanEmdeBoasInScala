@@ -7,12 +7,14 @@
 
 An implementation of van Emde Boas Tree data structure in scala.
 
-###### may be TODO
+###### may TODO
 - [x] Create performance tests
-- [ ] Measure memory consumption againt data size (n) and bit (w)
+- [x] Measure memory consumption againt data size (n) and bit (w)
+- [x] Create a complete immutable version
+- [x] Improve usage of generators for performance tests 
+- [ ] Do performance tests for Immutable Version
+- [ ] Compare performance between mutable and immutable 
 - [ ] Use immutable case class for small vEB nodes (may save a lot of space)
-- [ ] Create a complete immutable version
-- [ ] Improve usage of generators for performance tests 
 - [ ] Implement for any Type
 - [ ] Use scalaCheck for defining properties
 ### References
