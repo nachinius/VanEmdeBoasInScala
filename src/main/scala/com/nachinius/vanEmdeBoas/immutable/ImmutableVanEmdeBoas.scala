@@ -30,9 +30,6 @@ case class Main[S <: vanEmdeBoas](
                  max: Int,
                  summary: S,
                  clusters: Map[Upper, S]) extends ImmutableVanEmdeBoas {
-  self =>
-  require(lowerbits > 0)
-  require(bits>1)
 
   override def foreach[U](f: Int => U): Unit = {
     f(min)
@@ -49,7 +46,7 @@ case class Main[S <: vanEmdeBoas](
       throw new IllegalArgumentException("requirement failed: " + message)
     }
     if( x == min) {
-      self
+      this
     } else {
       val (nextMin, nextInsert) = if( x < min) (x, min) else (min, x)
       val nextMax = if( x > max) x else max
@@ -128,14 +125,14 @@ case class SingleBit(min: Int, max: Int, bits:Int = 1) extends ImmutableVanEmdeB
     self =>
 
       override def insert(x: Int): ImmutableVanEmdeBoas =
-    if( x < min || x > max) self.copy(0,1)
-    else self
-    //    case (0,1,1) => self.copy(0,1)
-    //    case (1,0,0) => self.copy(0,1)
-    //    case (0,0,0) => self
-    //    case (0,0,1) => self
-    //    case (1,0,1) => self
-    //    case (1,1,1) => self
+    if( x < min || x > max) this.copy(0,1)
+    else this
+    //    case (0,1,1) => this.copy(0,1)
+    //    case (1,0,0) => this.copy(0,1)
+    //    case (0,0,0) => this
+    //    case (0,0,1) => this
+    //    case (1,0,1) => this
+    //    case (1,1,1) => this
 
     override def successor(x: Int): Option[Int] = {
       if(x == 0 && max == 1) Some(1) else None
