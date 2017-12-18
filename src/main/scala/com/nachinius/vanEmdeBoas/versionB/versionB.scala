@@ -2,162 +2,155 @@ package com.nachinius.vanEmdeBoas.versionB
 
 import com.nachinius.vanEmdeBoas.{Lower, Upper, vanEmdeBoas}
 
-import scala.collection.mutable
 
 object versionB {
   /**
     * @param bits Bits used to store the numbers (w = log u). Numbers allowed will be in range
     *             [0,1,...,2^bits-1]
     */
-  def apply[T](bits: Int): versionB = {
-    if(bits == 1) new smallVEB() else new mainVEB(bits)
-  }
+  def apply[T](bits: Int): versionB = Empty(bits)
+
 }
 
-abstract class versionB extends vanEmdeBoas
+sealed trait versionB extends vanEmdeBoas
 
-class mainVEB(override val bits: Int) extends versionB {
+sealed trait ImmutableVanEmdeBoas extends versionB {
+  val bits: Int
 
   val maxNumber = (1 << bits)-1
   val minNumber = 0
   val halfbits: Int = math.ceil(0.5 * bits.toDouble).intValue()
   val lowerbits: Int = bits - halfbits
-  require(halfbits + lowerbits == bits)
-  require(bits>1)
-  require(lowerbits > 0)
-  require(maxNumber > 0) // avoid overflow of the number
-
-  override def toString(): String = {
-    s"vEB($bits($halfbits++$lowerbits)=>[$minNumber,$maxNumber],,,clusters=${cluster.size}"
-  }
-
-  override def foreach[U](f: T => U): Unit = {
-    min.fold({}) { min =>
-      f(min)
-      cluster.foreach {
-        case (z @ Upper(v) , boas: Set) =>
-          boas.foreach(x => f(v * (1<<lowerbits) + x))
-      }
-    }
-  }
-
-  // don't use space for empty summaries
-  lazy val summary: vanEmdeBoas = versionB(halfbits)
-  // using a hash table for cluster, we only store non empty ones
-  val cluster: mutable.Map[Upper,vanEmdeBoas] = mutable.Map()
-
-  def insertIntoMinAndMax(t: T) = {
-    min = Some(t)
-    max = Some(t)
-  }
-
-  override def insert(x: T): Set = {
-    if(x>maxNumber) {
-      val message = s"$x is out of bounds (max=$maxNumber) from bits=$bits"
-      throw new IllegalArgumentException("requirement failed: "+ message)
-    }
-    min.filterNot(
-      // don't do doble insert
-      minValue => x == minValue
-    ).fold(
-      // no minimum, first set of min (and max)
-      insertIntoMinAndMax(x)
-    ) {
-      minValue =>
-        // swap x & minValue if necessary
-        val (nextMinValue, pushValue) = if(x<minValue) (x,minValue) else (minValue, x)
-        min = Some(nextMinValue)
-
-        // new max
-        max = max.map(prev => if(prev<pushValue) pushValue else prev)
-
-        val (c,i) = expr(pushValue)
-        // create cluster if necessary and add to summary
-        if (cluster.get(c).isEmpty) {
-          cluster += (c -> versionB(lowerbits))
-          summary.insert(c.value)
-        }
-        // recurse for insertion
-        cluster.get(c).foreach(_.insert(i.value))
-    }
-    this
-  }
-
-  override def member(x: Int): Boolean = min match {
-    case None => false // no min, so is completely empty
-    case Some(mn) =>
-      if(x == mn || max.contains(x)) true
-      else if(max.nonEmpty && max.get < x) false
-      else {
-        val (c, l) = expr(x)
-        cluster.get(c).fold(false)((b: vanEmdeBoas) => b.member(l.value))
-      }
-  }
-
-
-  // SuccessorPredecessor
-  override def successor(x: Int): Option[Int] = min match {
-    case None => None // no min, empty veb, impossible successor
-    case Some(m) if x<m => min // trivial successor
-    case _ => // need to look inside
-      val (c, l) = expr(x)
-      getSuccessorInsideCluster(c.value,l.value) orElse getSuccessorFromSummary(c.value,l.value)
-  }
-
-  def getSuccessorInsideCluster(upper: Int, lower: Int): Option[Int] = for {
-    cl <- cluster.get(Upper(upper))
-    max: Int <- cl.max if lower < max
-    next <- cl.successor(lower)
-  } yield toNumber(Upper(upper),Lower(next))
-
-  def getSuccessorFromSummary(upper: Int, lower: Int): Option[Int] = for {
-    successorClusterNumber <- summary.successor(upper)
-    clusterOfSuccessor <- cluster.get(Upper(successorClusterNumber))
-    successorLower <- clusterOfSuccessor.min
-  } yield toNumber(Upper(successorClusterNumber),Lower(successorLower))
-
-
+  require(halfbits + lowerbits == bits, "inconsistency calculate for bits sum")
+  require(maxNumber > 0, s"maxNumber should be positive, current $maxNumber for $bits, $halfbits, $lowerbits")
+  override def insert(x: T): vanEmdeBoas
 }
 
 
-class smallVEB() extends versionB {
+case class Main[S <: vanEmdeBoas](
+                 bits: Int,
+                 min: Int,
+                 max: Int,
+                 summary: S,
+                 clusters: Map[Upper, S]) extends ImmutableVanEmdeBoas {
+  self =>
+  require(lowerbits > 0)
+  require(bits>1)
 
-  override val bits: Int = 1
-  override val halfbits: Int = 0
-  override val lowerbits: Int = 1
-  override val maxNumber: Int = 1
+  override def foreach[U](f: Int => U): Unit = {
+    f(min)
+    clusters.foreach {
+      case (Upper(v), s) => s.foreach(
+        x => f(v* (1<<lowerbits) + x)
+      )
+    }
+  }
+
+  override def insert(x: T) = {
+    if (x > maxNumber) {
+      val message = s"$x is out of bounds (max=$maxNumber) from bits=$bits"
+      throw new IllegalArgumentException("requirement failed: " + message)
+    }
+    if( x == min) {
+      self
+    } else {
+      val (nextMin, nextInsert) = if( x < min) (x, min) else (min, x)
+      val nextMax = if( x > max) x else max
+
+      val (nextSummary, nextClusters) = calculateSummaryAndCluster(nextInsert)
+
+      Main(bits,nextMin,nextMax,nextSummary,nextClusters)
+    }
+
+  }
+
+   private[this] def calculateSummaryAndCluster(x: Int) = {
+    val (c, i) = expr(x)
+    clusters.get(c) match {
+      case None =>
+        (summary.insert(c.value),
+          clusters + ( c  -> Empty(lowerbits).insert(i.value)))
+      case Some(cluster) =>
+        (summary,
+          clusters.updated(c, cluster.insert(i.value)))
+    }
+  }
 
   override def successor(x: Int): Option[Int] =
-    if(x == 0 && max.contains(1)) max else None
-
-  override def foreach[U](f: T => U): Unit = {
-    if(min.isDefined) {
-      f(min.get)
-      if(max.isDefined && max.get != min.get) {
-        f(max.get)
-      }
+    if(x<min) Some(min)
+    else {
+      val (c, l) = expr(x)
+      getSuccessorInsideCluster(c, l) orElse
+        getSuccessorFromSummary(c,l)
     }
+
+  private def getSuccessorInsideCluster(c: Upper, l: Lower) = {
+    for {
+      cluster <- clusters.get(c) if l.value < cluster.max
+      next <- cluster.successor(l.value)
+    } yield toNumber(c, Lower(next))
+  }
+
+  private def getSuccessorFromSummary(upper: Upper, lower: Lower): Option[Int] = {
+    for {
+      idx <- summary.successor(upper.value)
+      cluster <- clusters.get(Upper(idx))
+      value <- cluster match {
+        case Main(_,m,_,_,_) => Some(m)
+        case SingleBit(m,_,_) => Some(m)
+        case Empty(_) => None
+        case _ => None
+      }
+    } yield toNumber(Upper(idx), Lower(value))
   }
 
   override def member(x: Int): Boolean = {
-    if(x==0) min.contains(0)
-    else if(x==1) max.contains(1)
-    else false
-  }
-
-  override def insert(x: Int): Set = {
-    if(x==0) {
-      min = Some(0)
-      if(max.isEmpty) max = Some(0)
-    }
-    else if(x==1) {
-      max = Some(1)
-      if(min.isEmpty) min = Some(1)
-    }
-    this
+    if(min == x || max == x) true
+    else if( x < max) {
+      val (c,l) = expr(x)
+      clusters.get(c) match {
+        case None => false
+        case Some(s) => s.member(l.value)
+      }
+    } else false
   }
 }
 
+case class Empty(bits: Int) extends ImmutableVanEmdeBoas {
+  override def insert(x: Int): ImmutableVanEmdeBoas =
+    if(bits == 1) SingleBit(x,x)
+    else Main(bits,x,x,Empty(halfbits),Map())
 
+  override def successor(x: Int): Option[Int] = None
 
+  override def member(x: Int): Boolean = false
 
+  override def foreach[U](f: Int => U): Unit = ()
+}
+
+case class SingleBit(min: Int, max: Int, bits:Int = 1) extends ImmutableVanEmdeBoas {
+    self =>
+
+      override def insert(x: Int): ImmutableVanEmdeBoas =
+    if( x < min || x > max) self.copy(0,1)
+    else self
+    //    case (0,1,1) => self.copy(0,1)
+    //    case (1,0,0) => self.copy(0,1)
+    //    case (0,0,0) => self
+    //    case (0,0,1) => self
+    //    case (1,0,1) => self
+    //    case (1,1,1) => self
+
+    override def successor(x: Int): Option[Int] = {
+      if(x == 0 && max == 1) Some(1) else None
+    }
+
+    override def member(x: Int): Boolean = x == min || x == max
+
+    override def foreach[U](f: Int => U): Unit = {
+      if(min != max) {
+        f(min)
+        f(max)
+      } else f(min)
+    }
+}

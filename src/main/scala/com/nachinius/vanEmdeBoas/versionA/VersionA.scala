@@ -16,7 +16,10 @@ object VersionA {
 
 
 // @mutable
-abstract class VersionA extends vanEmdeBoas
+abstract class VersionA extends vanEmdeBoas {
+  var min: Option[Int] = None
+  var max: Option[Int] = None
+}
 
 class BigVEBVersionA(override val bits: Int) extends VersionA {
 
@@ -42,7 +45,7 @@ class BigVEBVersionA(override val bits: Int) extends VersionA {
     min.fold({}) { min =>
       f(min)
       cluster.foreach {
-        case (z @ Upper(v) , boas: Set) =>
+        case (z @ Upper(v) , boas) =>
           boas.foreach(x => f(v * (1<<lowerbits) + x))
       }
     }
@@ -53,7 +56,7 @@ class BigVEBVersionA(override val bits: Int) extends VersionA {
     max = Some(t)
   }
 
-  override def insert(x: T): Set = {
+  override def insert(x: T) = {
     if(x>maxNumber) {
       val message = s"$x is out of bounds (max=$maxNumber) from bits=$bits"
       throw new IllegalArgumentException("requirement failed: "+ message)
@@ -147,7 +150,7 @@ class SmallVEBVersionA() extends VersionA {
     else false
   }
 
-  override def insert(x: Int): Set = {
+  override def insert(x: Int)= {
     if(x==0) {
       min = Some(0)
       if(max.isEmpty) max = Some(0)

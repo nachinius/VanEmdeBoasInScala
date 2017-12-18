@@ -25,26 +25,50 @@ trait vanEmdeBoasTest extends FreeSpec with Matchers {
       constructorVanEmdeBoas(5).maxNumber should be > 0
       constructorVanEmdeBoas(30).maxNumber should be > 0
     }
-    "member" in {
-      val veb = constructorVanEmdeBoas(8)
-      val seed = 1
-      val rnd = new Random(seed)
-
-      val original: immutable.Seq[Int] = (1 to 1000).map(_ => rnd.nextInt(veb.maxNumber)).distinct
-      val lst = rnd.shuffle(original)
-      lst foreach veb.insert
-
-      (original map veb.member) shouldBe (original map { _ => true})
-      (0 to 100).toList.diff(original).map(veb.member) should not contain (true)
-    }
-
     "insert" in {
       val a = constructorVanEmdeBoas(8)
       assert(a.insert(3).member(3))
-      assert(a.insert(4).member(3))
-      assert(a.member(4))
+      assert(a.insert(4).member(4))
+      assert(a.insert(3).insert(4).member(3))
       val i = (1 << 7) - 1
       assert(a.insert(i).member( i))
+      assert(a.insert(0).member(0))
+    }
+    "member" - {
+      "should report correctly" in {
+        val veb = constructorVanEmdeBoas(8)
+        val seed = 1
+        val rnd = new Random(seed)
+        val n = 1000
+
+        val original: immutable.Seq[Int] = (1 to n).map(_ => rnd.nextInt(veb.maxNumber)).distinct
+        val lst = rnd.shuffle(original)
+        val testable: vanEmdeBoas = lst.foldLeft(veb)((boas: vanEmdeBoas, i: Int) => boas.insert(i))
+
+        (original map testable.member) shouldBe (original map { _ => true })
+        (0 to 100).toList.diff(original).map(testable.member) should not contain (true)
+      }
+    }
+    "foreach" - {
+      "must walk all numbers" in {
+        val seed: Long = 12758345
+        val numbersToInsert = 300
+        val rnd = new Random(seed)
+        val veb = constructorVanEmdeBoas(16)
+        val numbers = ((0 to 255) ++ (1 to numbersToInsert).map(_ => rnd.nextInt(veb.maxNumber))).distinct
+        // insert
+        val testable = numbers.foldLeft(veb)((boas: vanEmdeBoas, i: Int) => boas.insert(i))
+        // collect
+        val result = mutable.ArrayBuffer[Int]()
+        testable.foreach(x => result += x)
+        // compare
+        result.sorted should be (result.distinct.sorted)
+        val diff = numbers.toSet.diff(result.toSet)
+        diff shouldBe empty
+        val diff2 = result.toSet.diff(numbers.toSet)
+        diff2 shouldBe empty
+      }
+
     }
 
     "lowerbits && upperbits" - {
@@ -69,32 +93,27 @@ trait vanEmdeBoasTest extends FreeSpec with Matchers {
           val rnd = new Random(seed)
           val original = List(2, 5, 8, 12, 16, 20, 24, 30, 31, 32, 33, 50, 54)
           val lst = rnd.shuffle(original)
-          // test
-          lst foreach veb.insert
+          val testable = lst.foldLeft(veb) {case (boas: vanEmdeBoas, i: Int) => boas.insert(i)}
 
-          veb.successor(2) shouldBe Some(5)
-          veb.successor(5) shouldBe Some(8)
-          veb.successor(6) shouldBe Some(8)
-          veb.successor(66) shouldBe None
-          veb.successor(0) shouldBe Some(2)
-          veb.member(24) shouldBe true
-          veb.successor(21) shouldBe Some(24)
+          testable.successor(2) shouldBe Some(5)
+          testable.successor(5) shouldBe Some(8)
+          testable.successor(6) shouldBe Some(8)
+          testable.successor(66) shouldBe None
+          testable.successor(0) shouldBe Some(2)
+          testable.member(24) shouldBe true
+          testable.successor(21) shouldBe Some(24)
 
-          val results = original map veb.successor
+          val results = original map testable.successor
           val expectedSuccessor = original.tail.map(Some(_)) :+ None
 
 
           results shouldBe expectedSuccessor
 
-          (original map veb.member) shouldBe original.map(_ => true)
+          (original map testable.member) shouldBe original.map(_ => true)
         }
 
         "when bits are odd" in {
-          val veb = constructorVanEmdeBoas(10)
-          veb.insert(20)
-          veb.insert(24)
-          veb.insert(10)
-          veb.successor(21) shouldBe Some(24)
+          constructorVanEmdeBoas(10).insert(20).insert(24).insert(10).successor(21) shouldBe Some(24)
         }
         "for most bits sizes" in {
           (8 to 30 by 1).foreach {
@@ -108,27 +127,7 @@ trait vanEmdeBoasTest extends FreeSpec with Matchers {
       }
     }
 
-    "foreach" - {
-      "must walk all numbers" in {
-        val seed: Long = 12758345
-        val numbersToInsert = 1000
-        val rnd = new Random(seed)
-        val veb = constructorVanEmdeBoas(16)
-        val numbers = ((0 to 255) ++ (1 to numbersToInsert).map(_ => rnd.nextInt(veb.maxNumber))).distinct
-        // insert
-        numbers.foreach(veb.insert)
-        // collect
-        val result = mutable.ArrayBuffer[Int]()
-        veb.foreach(x => result += x)
-        // compare
-        result.sorted should be (result.distinct.sorted)
-        val diff = numbers.toSet.diff(result.toSet)
-        diff shouldBe empty
-        val diff2 = result.toSet.diff(numbers.toSet)
-        diff2 shouldBe empty
-      }
 
-    }
 
 
 

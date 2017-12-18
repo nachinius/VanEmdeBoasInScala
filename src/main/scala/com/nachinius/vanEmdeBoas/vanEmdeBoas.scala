@@ -1,11 +1,10 @@
 package com.nachinius.vanEmdeBoas
 
 // @mutable
-abstract class vanEmdeBoas extends Membership[Int] with Traversable[Int] with SuccessorPredecessor {
+trait vanEmdeBoas extends Membership[Int] with Traversable[Int] with SuccessorPredecessor[Int] {
   type T = Int
-  type Set = vanEmdeBoas
-  var min: Option[Int] = None
-  var max: Option[Int] = None
+//  var min: Option[Int] = None
+//  var max: Option[Int] = None
   val maxNumber: Int
   val bits: Int
   val halfbits: Int
@@ -15,6 +14,8 @@ abstract class vanEmdeBoas extends Membership[Int] with Traversable[Int] with Su
   def getLower: Int => Lower = x => Lower(x & ((1 << lowerbits) - 1))
   def expr: Int => (Upper,Lower) = x => (getUpper(x),getLower(x))
   def toNumber(c: Upper, l: Lower): Int = (c.value << lowerbits) | l.value
+
+  override def insert(x: T): vanEmdeBoas
 }
 
 case class Upper(value: Int) extends AnyVal

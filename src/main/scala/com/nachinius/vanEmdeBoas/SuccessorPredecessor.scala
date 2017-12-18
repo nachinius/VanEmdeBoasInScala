@@ -1,9 +1,7 @@
 package com.nachinius.vanEmdeBoas
 
-trait SuccessorPredecessor {
+trait SuccessorPredecessor[T] {
 
-  type T
-  type Set
   def successor(x: T): Option[T]
 //  def predecessor(x: T): Option[T]
 }
