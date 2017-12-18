@@ -1,20 +1,18 @@
-package com.nachinius.vanEmdeBoas.versionB
+package com.nachinius.vanEmdeBoas.immutable
 
 import com.nachinius.vanEmdeBoas.{Lower, Upper, vanEmdeBoas}
 
 
-object versionB {
+object ImmutableVanEmdeBoas {
   /**
     * @param bits Bits used to store the numbers (w = log u). Numbers allowed will be in range
     *             [0,1,...,2^bits-1]
     */
-  def apply[T](bits: Int): versionB = Empty(bits)
+  def apply[T](bits: Int): ImmutableVanEmdeBoas = Empty(bits)
 
 }
 
-sealed trait versionB extends vanEmdeBoas
-
-sealed trait ImmutableVanEmdeBoas extends versionB {
+sealed trait ImmutableVanEmdeBoas extends vanEmdeBoas {
   val bits: Int
 
   val maxNumber = (1 << bits)-1
@@ -25,7 +23,6 @@ sealed trait ImmutableVanEmdeBoas extends versionB {
   require(maxNumber > 0, s"maxNumber should be positive, current $maxNumber for $bits, $halfbits, $lowerbits")
   override def insert(x: T): vanEmdeBoas
 }
-
 
 case class Main[S <: vanEmdeBoas](
                  bits: Int,

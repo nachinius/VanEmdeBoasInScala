@@ -1,27 +1,27 @@
-package com.nachinius.vanEmdeBoas.versionA
+package com.nachinius.vanEmdeBoas.mutable
 
 import com.nachinius.vanEmdeBoas.{Lower, Upper, vanEmdeBoas}
 
 import scala.collection.mutable
 
-object VersionA {
+object mutableVanEmdeBoas {
   /**
     * @param bits Bits used to store the numbers (w = log u). Numbers allowed will be in range
     *             [0,1,...,2^bits-1]
     */
-  def apply[T](bits: Int): VersionA = {
-    if(bits == 1) new SmallVEBVersionA() else new BigVEBVersionA(bits)
+  def apply[T](bits: Int): mutableVanEmdeBoas = {
+    if(bits == 1) new SmallVEBMutableVanEmdeBoas() else new BigVEBMutableVanEmdeBoas(bits)
   }
 }
 
 
 // @mutable
-abstract class VersionA extends vanEmdeBoas {
+abstract class mutableVanEmdeBoas extends vanEmdeBoas {
   var min: Option[Int] = None
   var max: Option[Int] = None
 }
 
-class BigVEBVersionA(override val bits: Int) extends VersionA {
+class BigVEBMutableVanEmdeBoas(override val bits: Int) extends mutableVanEmdeBoas {
 
   val maxNumber = (1 << bits)-1
   val minNumber = 0
@@ -33,9 +33,9 @@ class BigVEBVersionA(override val bits: Int) extends VersionA {
   require(maxNumber > 0) // avoid overflow of the number
 
   // don't use space for empty summaries
-  lazy val summary: vanEmdeBoas = VersionA(halfbits)
+  lazy val summary: vanEmdeBoas = mutableVanEmdeBoas(halfbits)
   // using a hash table for cluster, we only store non empty ones
-  val cluster: mutable.Map[Upper,VersionA] = mutable.Map()
+  val cluster: mutable.Map[Upper,mutableVanEmdeBoas] = mutable.Map()
 
   override def toString(): String = {
     s"vEB($bits($halfbits++$lowerbits)=>[$minNumber,$maxNumber],,,clusters=${cluster.size}"
@@ -79,7 +79,7 @@ class BigVEBVersionA(override val bits: Int) extends VersionA {
         val (c,i) = expr(pushValue)
         // create cluster if necessary and add to summary
         if (cluster.get(c).isEmpty) {
-          cluster += (c -> VersionA(lowerbits))
+          cluster += (c -> mutableVanEmdeBoas(lowerbits))
           summary.insert(c.value)
         }
         // recurse for insertion
@@ -95,7 +95,7 @@ class BigVEBVersionA(override val bits: Int) extends VersionA {
       else if(max.nonEmpty && max.get < x) false
       else {
         val (c, l) = expr(x)
-        cluster.get(c).fold(false)((b: VersionA) => b.member(l.value))
+        cluster.get(c).fold(false)((b: mutableVanEmdeBoas) => b.member(l.value))
       }
   }
 
@@ -125,7 +125,7 @@ class BigVEBVersionA(override val bits: Int) extends VersionA {
 }
 
 
-class SmallVEBVersionA() extends VersionA {
+class SmallVEBMutableVanEmdeBoas() extends mutableVanEmdeBoas {
 
   override val bits: Int = 1
   override val halfbits: Int = 0

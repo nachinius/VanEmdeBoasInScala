@@ -1,7 +1,7 @@
-package com.nachinius.vanEmdeBoas.versionB
+package com.nachinius.vanEmdeBoas.immutable
 
+import com.nachinius.vanEmdeBoas.mutable.mutableVanEmdeBoas
 import com.nachinius.vanEmdeBoas.vanEmdeBoas
-import com.nachinius.vanEmdeBoas.versionA.VersionA
 import org.scalameter.{Bench, Gen}
 
 import scala.collection.immutable
@@ -19,7 +19,7 @@ object immutableVanEmdeBoasPerformance extends Bench.OfflineReport {
       val bits = Gen.range("bits")(4,30,1)
       val genBoas: Gen[vanEmdeBoas] = for {
         bit <- bits
-        veb = versionB(bit).asInstanceOf[vanEmdeBoas]
+        veb = ImmutableVanEmdeBoas(bit).asInstanceOf[vanEmdeBoas]
         lst = (1 to n).map(_ => rnd.nextInt(veb.maxNumber)).distinct
       } yield lst.foldLeft(veb) {
         case (boas, i) => boas.insert(i)
@@ -38,14 +38,14 @@ object immutableVanEmdeBoasPerformance extends Bench.OfflineReport {
     measure method "successor" in {
       val rnd = new Random(seed)
       val bits = Gen.range("bits")(4,30,1)
-      val genBoas: Gen[VersionA] = for {
+      val genBoas: Gen[mutableVanEmdeBoas] = for {
         bit <- bits
-        veb = VersionA(bit)
+        veb = mutableVanEmdeBoas(bit)
         lst = (1 to n).map(_ => rnd.nextInt(veb.maxNumber)).distinct
       } yield lst.foldLeft(veb) {
         case (boas, i) => boas.insert(i);boas
       }
-      val genBoasWithSearchData: Gen[(VersionA, immutable.IndexedSeq[Int])] = for {
+      val genBoasWithSearchData: Gen[(mutableVanEmdeBoas, immutable.IndexedSeq[Int])] = for {
         boas <- genBoas
         elem = (1 to searches).map(_ => rnd.nextInt(boas.maxNumber))
       } yield (boas, elem)

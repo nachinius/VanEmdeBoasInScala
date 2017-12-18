@@ -1,9 +1,9 @@
-package com.nachinius.vanEmdeBoas.versionA
+package com.nachinius.vanEmdeBoas.mutable
 
 import com.nachinius.vanEmdeBoas.{vanEmdeBoas, vanEmdeBoasTest}
 
-class versionATest extends vanEmdeBoasTest {
+class mutableVanEmdeBoasTest extends vanEmdeBoasTest {
   override def constructorVanEmdeBoas: Int => vanEmdeBoas = {
-    VersionA(_)
+    mutableVanEmdeBoas(_)
   }
 }
