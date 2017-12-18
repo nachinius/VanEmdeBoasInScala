@@ -1,6 +1,5 @@
 package com.nachinius.vanEmdeBoas
 
-// @mutable
 trait vanEmdeBoas extends Membership[Int] with Traversable[Int] with SuccessorPredecessor[Int] {
   type T = Int
 //  var min: Option[Int] = None

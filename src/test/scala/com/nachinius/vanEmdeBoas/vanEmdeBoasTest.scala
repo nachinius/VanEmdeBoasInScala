@@ -2,7 +2,7 @@ package com.nachinius.vanEmdeBoas
 
 import org.scalatest.{FreeSpec, Matchers}
 
-import scala.collection.{immutable, mutable}
+import scala.collection.{immutable => im, mutable => mut}
 import scala.util.Random
 
 trait vanEmdeBoasTest extends FreeSpec with Matchers {
@@ -41,7 +41,7 @@ trait vanEmdeBoasTest extends FreeSpec with Matchers {
         val rnd = new Random(seed)
         val n = 1000
 
-        val original: immutable.Seq[Int] = (1 to n).map(_ => rnd.nextInt(veb.maxNumber)).distinct
+        val original: im.Seq[Int] = (1 to n).map(_ => rnd.nextInt(veb.maxNumber)).distinct
         val lst = rnd.shuffle(original)
         val testable: vanEmdeBoas = lst.foldLeft(veb)((boas: vanEmdeBoas, i: Int) => boas.insert(i))
 
@@ -59,7 +59,7 @@ trait vanEmdeBoasTest extends FreeSpec with Matchers {
         // insert
         val testable = numbers.foldLeft(veb)((boas: vanEmdeBoas, i: Int) => boas.insert(i))
         // collect
-        val result = mutable.ArrayBuffer[Int]()
+        val result = mut.ArrayBuffer[Int]()
         testable.foreach(x => result += x)
         // compare
         result.sorted should be (result.distinct.sorted)

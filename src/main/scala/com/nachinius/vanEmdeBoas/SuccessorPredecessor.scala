@@ -10,3 +10,4 @@ trait Membership[T] {
   def insert(x: T): Membership[T]
   def member(x: T): Boolean
 }
+
