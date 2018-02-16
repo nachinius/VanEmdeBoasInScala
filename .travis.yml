@@ -6,3 +6,4 @@ script:
     sbt coverageAggregate
 after_success:
   - sbt coveralls
+  - bash <(curl -s https://codecov.io/bash)
