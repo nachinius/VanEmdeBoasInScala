@@ -1,11 +1,12 @@
-[![Build Status](https://travis-ci.org/nachinius/van_emde_boas_in_scala.svg?branch=master)](https://travis-ci.org/nachinius/van_emde_boas_in_scala)
+[![Build Status](https://travis-ci.org/nachinius/VanEmdeBoasInScala.svg?branch=master)](https://travis-ci.org/nachinius/VanEmdeBoasInScala)
 [![Coverage Status](https://coveralls.io/repos/github/nachinius/van_emde_boas_in_scala/badge.svg)](https://coveralls.io/github/nachinius/van_emde_boas_in_scala)
 [![Join the chat at https://gitter.im/nachinius/van_emde_boas_in_scala](https://badges.gitter.im/nachinius/van_emde_boas_in_scala.svg)](https://gitter.im/nachinius/van_emde_boas_in_scala?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![License](https://img.shields.io/badge/License-Apache%202.0-blue.svg)](https://opensource.org/licenses/Apache-2.0)
 
 # van Emde Boas Tree in scala
 #### a fast successor for integers set
 
-An implementation of van Emde Boas Tree data structure in scala.
+A van Emde Boas data strucuture that achieves O(lg lg n) predecessor and successor queries with O(n) space"
 
 ###### may TODO
 - [x] Create performance tests
