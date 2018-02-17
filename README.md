@@ -18,7 +18,7 @@ A van Emde Boas data strucuture that achieves O(lg lg n) (w.h.p) predecessor and
 - [x] Compare performance between mutable and immutable 
 - [ ] Augment the structure
 - [ ] Add delete
-- [ ] Write predecessor  
+- [x] Write predecessor  
 
 ### References
 [1] MIT 6.851 Advanced Data Structures, lecture 11
