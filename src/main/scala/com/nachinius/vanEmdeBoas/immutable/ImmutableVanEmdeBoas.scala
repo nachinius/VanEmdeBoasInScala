@@ -109,7 +109,6 @@ case class Main[S <: vanEmdeBoas](
   }
 
   override def predecessor(x: T): Option[T] = {
-    None // TODO
   }
 }
 
