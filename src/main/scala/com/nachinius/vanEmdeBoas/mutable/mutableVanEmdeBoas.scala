@@ -28,11 +28,11 @@ class BigVEBMutableVanEmdeBoas(override val bits: Int) extends mutableVanEmdeBoa
   val maxNumber = (1 << bits) - 1
   val minNumber = 0
   val halfbits: Int = math.ceil(0.5 * bits.toDouble).intValue()
+  val lowerbits: Int = bits - halfbits
   require(halfbits + lowerbits == bits)
   require(bits > 1)
   require(lowerbits > 0)
   require(maxNumber > 0) // avoid overflow of the number
-  val lowerbits: Int = bits - halfbits
   // using a hash table for cluster, we only store non empty ones
   val cluster: mutable.Map[Upper, mutableVanEmdeBoas] = mutable.Map()
 
