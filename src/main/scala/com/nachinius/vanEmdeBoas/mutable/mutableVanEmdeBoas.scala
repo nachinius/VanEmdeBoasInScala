@@ -121,7 +121,35 @@ class BigVEBMutableVanEmdeBoas(override val bits: Int) extends mutableVanEmdeBoa
     successorLower <- clusterOfSuccessor.min
   } yield toNumber(Upper(successorClusterNumber),Lower(successorLower))
 
+  def getPredecessorInsideCluster(upper: Int, lower: Int) = for {
+    cl <- cluster.get(Upper(upper))
+    min: Int <- cl.min if lower > min
+    next <- cl.predecessor(lower)
+  } yield toNumber(Upper(upper),Lower(next))
 
+  def getPredecessorFromSummary(upper: Int, lower: Int): Option[Int] = for {
+    predecessorClusterNumber <- summary.predecessor(upper)
+    clusterOfPredecessor <- cluster.get(Upper(predecessorClusterNumber))
+    predecessorLower <- clusterOfPredecessor.max
+  } yield toNumber(Upper(predecessorClusterNumber),Lower(predecessorLower))
+
+  override def predecessor(x: T): Option[T] = {
+    println(s"Seeking predecessor of $x, here we have min=$min & max=$max")
+    val result = max match {
+      case None => None // no max, empty veb, no predecessor in here
+      case Some(m) if x > m => max // trivial predecessor
+      case _ =>
+        min match {
+          //        case None => None // is ruled out because there is a max
+          case Some(mi) if x <= mi => None // not in here
+          case _ => // it must be inside
+            val (c, l) = expr(x)
+            getPredecessorInsideCluster(c.value, l.value) orElse getPredecessorFromSummary(c.value, l.value) orElse min
+        }
+    }
+    println(s"Result = $result")
+    result
+  }
 }
 
 
@@ -134,6 +162,9 @@ class SmallVEBMutableVanEmdeBoas() extends mutableVanEmdeBoas {
 
   override def successor(x: Int): Option[Int] =
     if(x == 0 && max.contains(1)) max else None
+
+  override def predecessor(x: T): Option[T] =
+    if(x == 1 && min.contains(0)) min else None
 
   override def foreach[U](f: T => U): Unit = {
     if(min.isDefined) {

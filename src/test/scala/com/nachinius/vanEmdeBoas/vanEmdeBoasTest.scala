@@ -127,6 +127,47 @@ trait vanEmdeBoasTest extends FreeSpec with Matchers {
       }
     }
 
+    "predecessor" - {
+      "should shield the following integer in set" - {
+        def successorTest(bits: Int): Any = {
+          val veb = constructorVanEmdeBoas(bits)
+          val seed: Long = 123423
+          val rnd = new Random(seed)
+          val original = List(2, 5, 8, 12, 16, 20, 24, 30, 31, 32, 33, 50, 54)
+          val lst = rnd.shuffle(original)
+          val testable = lst.foldLeft(veb) {case (boas: vanEmdeBoas, i: Int) => boas.insert(i)}
+
+          testable.predecessor(2) shouldBe None
+          testable.predecessor(5) shouldBe Some(2)
+          testable.predecessor(6) shouldBe Some(5)
+          testable.predecessor(66) shouldBe Some(54)
+          testable.predecessor(0) shouldBe None
+          testable.member(24) shouldBe true
+          testable.predecessor(21) shouldBe Some(20)
+
+          val results = original map testable.predecessor
+          val expectedPredecessor = None +: original.init.map(Some(_))
+
+
+          results shouldBe expectedPredecessor
+
+          (original map testable.member) shouldBe original.map(_ => true)
+        }
+
+        "when bits are odd" in {
+          constructorVanEmdeBoas(10).insert(20).insert(24).insert(10).predecessor(21) shouldBe Some(20)
+        }
+        "for most bits sizes" in {
+          (8 to 30 by 1).foreach {
+            bits =>
+              withClue(s"In bits = $bits") {
+                successorTest(bits)
+              }
+          }
+        }
+
+      }
+    }
 
 
 

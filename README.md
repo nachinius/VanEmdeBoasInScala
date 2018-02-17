@@ -7,7 +7,7 @@
 # van Emde Boas Tree in scala
 #### a fast successor for integers set
 
-A van Emde Boas data strucuture that achieves O(lg lg n) predecessor and successor queries with O(n) space"
+A van Emde Boas data strucuture that achieves O(lg lg n) (w.h.p) predecessor and successor queries with O(n) space"
 
 ###### may TODO
 - [x] Create performance tests

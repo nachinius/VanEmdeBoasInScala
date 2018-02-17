@@ -107,12 +107,18 @@ case class Main[S <: vanEmdeBoas](
       }
     } else false
   }
+
+  override def predecessor(x: T): Option[T] = {
+    None // TODO
+  }
 }
 
 case class Empty(bits: Int) extends ImmutableVanEmdeBoas {
   override def insert(x: Int): ImmutableVanEmdeBoas =
     if(bits == 1) SingleBit(x,x)
     else Main(bits,x,x,Empty(halfbits),Map())
+
+  override def predecessor(x: T): Option[T] = None
 
   override def successor(x: Int): Option[Int] = None
 
@@ -134,7 +140,10 @@ case class SingleBit(min: Int, max: Int, bits:Int = 1) extends ImmutableVanEmdeB
     //    case (1,0,1) => this
     //    case (1,1,1) => this
 
-    override def successor(x: Int): Option[Int] = {
+  override def predecessor(x: T): Option[T] =
+    if( x== 1 && min == 0) Some(0) else None
+
+  override def successor(x: Int): Option[Int] = {
       if(x == 0 && max == 1) Some(1) else None
     }
 

@@ -3,7 +3,7 @@ package com.nachinius.vanEmdeBoas
 trait SuccessorPredecessor[T] {
 
   def successor(x: T): Option[T]
-//  def predecessor(x: T): Option[T]
+  def predecessor(x: T): Option[T]
 }
 
 trait Membership[T] {
