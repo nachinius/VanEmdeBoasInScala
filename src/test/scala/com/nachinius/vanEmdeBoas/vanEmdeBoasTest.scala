@@ -50,7 +50,7 @@ trait vanEmdeBoasTest extends FreeSpec with Matchers {
       }
     }
     "foreach" - {
-      "must walk all numbers" in {
+      "must walk all inserted numbers" in {
         val seed: Long = 12758345
         val numbersToInsert = 300
         val rnd = new Random(seed)
@@ -169,6 +169,33 @@ trait vanEmdeBoasTest extends FreeSpec with Matchers {
       }
     }
 
+    "delete" - {
+      val seed: Long = 435784L
+      val rnd = new Random(seed)
+      val n = 300
+      val bits = 16
+      val initialVEB = constructorVanEmdeBoas(bits)
+      val maxValue = initialVEB.maxNumber
+      val numbers = (0 until n).map(_ => rnd.nextInt(maxValue)).distinct
+      val veb = numbers.tail.foldLeft(initialVEB)((boas, i) => boas.insert(i))
+      val notInserted = numbers.head
+      veb.member(notInserted) shouldBe false
+      "unexisting number should return same structure" in {
+        val previous = veb.toVector
+        val next = veb.delete(notInserted)
+        next.member(notInserted) shouldBe false
+        next should contain only previous
+      }
+      "existing number should" - {
+        "should take it out" in {
+          val number = numbers(rnd.nextInt(numbers.tail.length))
+          val remaining = numbers.diff(number :: Nil)
+          val withDeleted = veb.delete(number)
+          veb.member(number) shouldBe false
+          veb should contain only remaining
+        }
+      }
+    }
 
 
 
