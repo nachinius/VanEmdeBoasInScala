@@ -15,9 +15,9 @@ trait vanEmdeBoas extends
   val halfbits: Int
   val lowerbits: Int
 
-  def min
-
-  def max
+//  def min
+//
+//  def max
 
   def expr: Int => (Upper, Lower) = x => (getUpper(x), getLower(x))
 
