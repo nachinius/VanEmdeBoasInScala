@@ -191,6 +191,7 @@ trait vanEmdeBoasTest extends FreeSpec with Matchers {
         veb = veb.delete(5)
         veb.member(5) shouldBe false
         veb = veb.insert(3).insert(8).insert(9).insert(12)
+        veb.member(12) shouldBe true
         veb = veb.delete(12)
         veb.member(12) shouldBe false
         veb = veb.delete(8)
