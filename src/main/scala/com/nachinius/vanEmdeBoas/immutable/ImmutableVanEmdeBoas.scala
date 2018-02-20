@@ -22,15 +22,23 @@ sealed trait ImmutableVanEmdeBoas extends vanEmdeBoas {
   require(halfbits + lowerbits == bits, "inconsistency calculate for bits sum")
   require(maxNumber > 0, s"maxNumber should be positive, current $maxNumber for $bits, $halfbits, $lowerbits")
 
-  override def insert(x: T): vanEmdeBoas
+  override def insert(x: T): ImmutableVanEmdeBoas
+
+  override def delete(x: T): ImmutableVanEmdeBoas
+
+  def optMin: Option[T]
+
+  def optMax: Option[T]
 }
 
-case class Main[S <: vanEmdeBoas](
-                                   bits: Int,
-                                   min: Int,
-                                   max: Int,
-                                   summary: S,
-                                   clusters: Map[Upper, S]) extends ImmutableVanEmdeBoas {
+case class Main(
+                 bits: Int,
+                 min: Int,
+                 max: Int,
+                 summary: ImmutableVanEmdeBoas,
+                 clusters: Map[Upper, ImmutableVanEmdeBoas]) extends ImmutableVanEmdeBoas {
+  type SummaryType = ImmutableVanEmdeBoas
+  type ClustersType = Map[Upper, ImmutableVanEmdeBoas]
   override def toString(): String = {
     toVector.sorted.map(_.toString()).mkString(", ")
   }
@@ -44,7 +52,11 @@ case class Main[S <: vanEmdeBoas](
     }
   }
 
-  override def insert(x: T) = {
+  def optMin: Option[T] = Some(min)
+
+  def optMax: Option[T] = Some(max)
+
+  override def insert(x: T): ImmutableVanEmdeBoas = {
     if (x > maxNumber) {
       val message = s"$x is out of bounds (max=$maxNumber) from bits=$bits"
       throw new IllegalArgumentException("requirement failed: " + message)
@@ -82,7 +94,7 @@ case class Main[S <: vanEmdeBoas](
         getSuccessorFromSummary(c, l)
     }
 
-  private def getSuccessorInsideCluster(c: Upper, l: Lower) = {
+  private def getSuccessorInsideCluster(c: Upper, l: Lower): Option[T] = {
     for {
       cluster <- clusters.get(c) if l.value < cluster.max
       next <- cluster.successor(l.value)
@@ -93,11 +105,7 @@ case class Main[S <: vanEmdeBoas](
     for {
       idx <- summary.successor(upper.value)
       cluster <- clusters.get(Upper(idx))
-      value <- cluster match {
-        case Main(_, m, _, _, _) => Some(m)
-        case SingleBit(m, _, _) => Some(m)
-        case _ => None
-      }
+      value <- cluster.optMin
     } yield toNumber(Upper(idx), Lower(value))
   }
 
@@ -129,12 +137,55 @@ case class Main[S <: vanEmdeBoas](
   def getPredecessorFromSummary(upper: Upper, l: Lower): Option[T] = for {
     idx <- summary.predecessor(upper.value)
     cluster <- clusters.get(Upper(idx))
-    value <- cluster match {
-      case Main(_, _, mx, _, _) => Some(mx)
-      case SingleBit(_, mx, _) => Some(mx)
-      case _ => None
-    }
+    value <- cluster.optMax
   } yield toNumber(Upper(idx), Lower(value))
+
+  def deleteFromCluster(upper: Upper, lower: Lower): ClustersType =
+    clusters.get(upper).map(_.delete(lower.value)).fold(clusters)(clusters.updated(upper,_))
+
+  def deleteFromSummaryIfNecessary(upper: Upper, clusters: ClustersType): (SummaryType, ClustersType) =
+    clusters.get(upper).filter(_.optMin.isEmpty).fold((summary,clusters))(_ =>
+      (summary.delete(upper.value), clusters - upper))
+
+  def delete(x: T): ImmutableVanEmdeBoas = {
+
+    getNextMinAndSubDeleteCoordinates(x).map {
+      case (nextMin: T, upper: Upper, lower: Lower) =>
+        val candidateClusters = deleteFromCluster(upper,lower)
+        val (nextSummmary, nextClusters) = deleteFromSummaryIfNecessary(upper, candidateClusters)
+        val max = getNextMax(nextSummmary,nextClusters, nextMin)
+        Main(bits,nextMin,max,nextSummmary,nextClusters)
+    } getOrElse Empty(bits)
+  }
+
+  def getClusterMin(c: Int): Option[T] = {
+    for {
+      cluster <- clusters.get(Upper(c))
+      min <- cluster.optMin
+    } yield min
+  }
+
+  private[this] def getNextMinAndSubDeleteCoordinates(x: T): Option[(T, Upper, Lower)] = {
+    if( x == min) {
+      for {
+        summaryMin <- summary.optMin
+        clusterMin <- getClusterMin(summaryMin)
+        upper = Upper(summaryMin)
+        lower = Lower(clusterMin)
+      } yield (toNumber(upper,lower),upper,lower)
+    } else {
+      val (c,l) = expr(x)
+      Some((min, c, l))
+    }
+  }
+
+  private[this] def getNextMax(summary: SummaryType, clusters: ClustersType, nextMin: T): T = {
+    (for {
+      c <- summary.optMin
+      clusterOfSummaryMax <- clusters.get(Upper(c))
+      mx <- clusterOfSummaryMax.optMax
+    } yield toNumber(Upper(c), Lower(mx))).getOrElse(nextMin)
+  }
 }
 
 /**
@@ -154,10 +205,20 @@ case class Empty(bits: Int) extends ImmutableVanEmdeBoas {
   override def member(x: Int): Boolean = false
 
   override def foreach[U](f: Int => U): Unit = ()
+
+  override def delete(x: T): ImmutableVanEmdeBoas = this
+
+  def optMin: Option[T] = None
+
+  def optMax: Option[T] = None
 }
 
 case class SingleBit(min: Int, max: Int, bits: Int = 1) extends ImmutableVanEmdeBoas {
   self =>
+
+  def optMin: Option[T] = Some(min)
+
+  def optMax: Option[T] = Some(max)
 
   override def insert(x: Int): ImmutableVanEmdeBoas =
     if (x < min || x > max) this.copy(0, 1)
@@ -184,5 +245,11 @@ case class SingleBit(min: Int, max: Int, bits: Int = 1) extends ImmutableVanEmde
       f(min)
       f(max)
     } else f(min)
+  }
+
+  override def delete(x: T): ImmutableVanEmdeBoas = {
+    if (x > min) self.copy(min, min)
+    else if (x < max) self.copy(max, max)
+    else Empty(1)
   }
 }

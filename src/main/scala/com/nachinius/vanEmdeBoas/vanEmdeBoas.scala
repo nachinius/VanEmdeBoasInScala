@@ -28,6 +28,8 @@ trait vanEmdeBoas extends
   def toNumber(c: Upper, l: Lower): Int = (c.value << lowerbits) | l.value
 
   override def insert(x: T): vanEmdeBoas
+
+  override def delete(x: T): vanEmdeBoas
 }
 
 case class Upper(value: Int) extends AnyVal

@@ -11,4 +11,6 @@ trait Membership[T] {
 
   /** Queries if an element exists in this structure **/
   def member(x: T): Boolean
+
+  def delete(x: T): Membership[T]
 }
