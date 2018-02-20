@@ -16,9 +16,9 @@ trait vanEmdeBoasTest extends FreeSpec with Matchers {
     }
     "maxNumber" in {
       val veb = constructorVanEmdeBoas(8)
-      veb.maxNumber shouldBe 2*2*2*2*2*2*2*2-1
+      veb.maxNumber shouldBe 2 * 2 * 2 * 2 * 2 * 2 * 2 * 2 - 1
       constructorVanEmdeBoas(4).maxNumber shouldBe 15
-      constructorVanEmdeBoas(16).maxNumber shouldBe (1<<16)-1
+      constructorVanEmdeBoas(16).maxNumber shouldBe (1 << 16) - 1
       constructorVanEmdeBoas(16).maxNumber should be > 0
       constructorVanEmdeBoas(12).maxNumber should be > 0
       constructorVanEmdeBoas(21).maxNumber should be > 0
@@ -31,7 +31,7 @@ trait vanEmdeBoasTest extends FreeSpec with Matchers {
       assert(a.insert(4).member(4))
       assert(a.insert(3).insert(4).member(3))
       val i = (1 << 7) - 1
-      assert(a.insert(i).member( i))
+      assert(a.insert(i).member(i))
       assert(a.insert(0).member(0))
     }
     "member" - {
@@ -62,7 +62,7 @@ trait vanEmdeBoasTest extends FreeSpec with Matchers {
         val result = mut.ArrayBuffer[Int]()
         testable.foreach(x => result += x)
         // compare
-        result.sorted should be (result.distinct.sorted)
+        result.sorted should be(result.distinct.sorted)
         val diff = numbers.toSet.diff(result.toSet)
         diff shouldBe empty
         val diff2 = result.toSet.diff(numbers.toSet)
@@ -75,12 +75,12 @@ trait vanEmdeBoasTest extends FreeSpec with Matchers {
       "when bits are odd" - {
         "must shield correct value" in {
           val v = constructorVanEmdeBoas(5)
-          v.expr(20) should be ((Upper(5),Lower(0)))
-          v.expr(21) should be ((Upper(5),Lower(1)))
-          v.expr(22) should be ((Upper(5),Lower(2)))
-          v.expr(23) should be ((Upper(5),Lower(3)))
-          v.expr(24) should be ((Upper(6),Lower(0)))
-          v.expr(25) should be ((Upper(6),Lower(1)))
+          v.expr(20) should be((Upper(5), Lower(0)))
+          v.expr(21) should be((Upper(5), Lower(1)))
+          v.expr(22) should be((Upper(5), Lower(2)))
+          v.expr(23) should be((Upper(5), Lower(3)))
+          v.expr(24) should be((Upper(6), Lower(0)))
+          v.expr(25) should be((Upper(6), Lower(1)))
         }
       }
     }
@@ -93,7 +93,7 @@ trait vanEmdeBoasTest extends FreeSpec with Matchers {
           val rnd = new Random(seed)
           val original = List(2, 5, 8, 12, 16, 20, 24, 30, 31, 32, 33, 50, 54)
           val lst = rnd.shuffle(original)
-          val testable = lst.foldLeft(veb) {case (boas: vanEmdeBoas, i: Int) => boas.insert(i)}
+          val testable = lst.foldLeft(veb) { case (boas: vanEmdeBoas, i: Int) => boas.insert(i) }
 
           testable.successor(2) shouldBe Some(5)
           testable.successor(5) shouldBe Some(8)
@@ -135,7 +135,7 @@ trait vanEmdeBoasTest extends FreeSpec with Matchers {
           val rnd = new Random(seed)
           val original = List(2, 5, 8, 12, 16, 20, 24, 30, 31, 32, 33, 50, 54)
           val lst = rnd.shuffle(original)
-          val testable = lst.foldLeft(veb) {case (boas: vanEmdeBoas, i: Int) => boas.insert(i)}
+          val testable = lst.foldLeft(veb) { case (boas: vanEmdeBoas, i: Int) => boas.insert(i) }
 
           testable.predecessor(2) shouldBe None
           testable.predecessor(5) shouldBe Some(2)
@@ -171,80 +171,100 @@ trait vanEmdeBoasTest extends FreeSpec with Matchers {
 
     "delete" - {
       "the only element" in {
-        val veb = constructorVanEmdeBoas(16)
-        veb.insert(5).member(5) shouldBe true
-        veb.delete(5).member(5) shouldBe false
+        var veb = constructorVanEmdeBoas(16)
+        veb = veb.insert(5)
+        veb.member(5) shouldBe true
+        veb = veb.delete(5)
+        veb.member(5) shouldBe false
       }
       "the max element" in {
-        val veb = constructorVanEmdeBoas(16)
-        veb.insert(3).insert(12).member(12) shouldBe true
-        veb.delete(12).member(12) shouldBe false
+        var veb = constructorVanEmdeBoas(16)
+        veb = veb.insert(3).insert(12)
+        veb.member(12) shouldBe true
+        veb = veb.delete(12)
+        veb.member(12) shouldBe false
       }
       "simple example" in {
-        val veb = constructorVanEmdeBoas(16)
-        veb.insert(5).member(5) shouldBe true
-        veb.delete(5).member(5) shouldBe false
-        veb.insert(3).insert(8).insert(9).insert(12)
-        veb.delete(12).member(12) shouldBe false
-        veb.delete(8).member(8) shouldBe false
-        veb.insert(8).delete(3).member(3) shouldBe false
+        var veb = constructorVanEmdeBoas(16)
+        veb = veb.insert(5)
+        veb.member(5) shouldBe true
+        veb = veb.delete(5)
+        veb.member(5) shouldBe false
+        veb = veb.insert(3).insert(8).insert(9).insert(12)
+        veb = veb.delete(12)
+        veb.member(12) shouldBe false
+        veb = veb.delete(8)
+        veb.member(8) shouldBe false
+        veb = veb.insert(8).delete(3)
+        veb.member(3) shouldBe false
         veb.member(8) shouldBe true
-        veb.insert(3).member(8) shouldBe true
+        veb = veb.insert(3)
+        veb.member(8) shouldBe true
         veb.member(3) shouldBe true
-        veb.delete(12).member(12) shouldBe false
+        veb = veb.delete(12)
+        veb.member(12) shouldBe false
       }
       "in large structures" - {
-        val seed: Long = 435784L
-        val rnd = new Random(seed)
-        val n = 1 << 7
-        val bits = 8
-        val initialVEB = constructorVanEmdeBoas(bits)
-        val maxValue = initialVEB.maxNumber
-        val numbers = (0 until n).map(_ => rnd.nextInt(maxValue)).distinct
-        val veb = numbers.tail.foldLeft(initialVEB)((boas, i) => boas.insert(i))
-        val notInserted = numbers.head
-        veb.member(notInserted) shouldBe false
         "an unexisting number should return same structure" in {
+          val seed: Long = 435784L
+          val rnd = new Random(seed)
+          val n = 1 << 7
+          val bits = 8
+          var veb: vanEmdeBoas = constructorVanEmdeBoas(bits)
+          val maxValue = veb.maxNumber
+          val numbers = (0 until n).map(_ => rnd.nextInt(maxValue)).distinct
+          veb = numbers.tail.foldLeft(veb)((boas, i) => boas.insert(i))
+          val notInserted = numbers.head
+          veb.member(notInserted) shouldBe false
           val previous = veb.toSeq
-          val next = veb.delete(notInserted)
-          next.member(notInserted) shouldBe false
-          next.toSeq should contain theSameElementsAs previous
+          veb = veb.delete(notInserted)
+          veb.member(notInserted) shouldBe false
+          veb.toSeq should contain theSameElementsAs previous
         }
         "an existing number" - {
           "should take it out" in {
+            val seed: Long = 435784L
+            val rnd = new Random(seed)
+            val n = 1 << 7
+            val bits = 8
+            var veb: vanEmdeBoas = constructorVanEmdeBoas(bits)
+            val maxValue = veb.maxNumber
+            val numbers = (0 until n).map(_ => rnd.nextInt(maxValue)).distinct
+            veb = numbers.tail.foldLeft(veb)((boas, i) => boas.insert(i))
+            val notInserted = numbers.head
+            veb.member(notInserted) shouldBe false
             // chose one
             val number = numbers(rnd.nextInt(numbers.tail.length))
             val remaining = numbers.diff(number :: Nil)
-            val allExceptOne = veb.delete(number)
-            allExceptOne.member(number) shouldBe false
-            allExceptOne.toSet -- remaining shouldBe Set()
+            veb = veb.delete(number)
+            veb.member(number) shouldBe false
+            veb.toSet -- remaining shouldBe Set()
           }
         }
       }
       "small veb" in {
-        val veb = constructorVanEmdeBoas(1)
-        veb.insert(0).insert(1)
-        veb.toSeq should contain theSameElementsAs Seq(0,1)
-        veb.delete(0).delete(1)
+        var veb = constructorVanEmdeBoas(1)
+        veb = veb.insert(0).insert(1)
+        veb.toSeq should contain theSameElementsAs Seq(0, 1)
+        veb = veb.delete(0).delete(1)
         veb.toSeq should have length 0
       }
       "correctly for smalls veb" in {
         val bits = 2
         val n = 1 << bits
-        val veb: vanEmdeBoas = constructorVanEmdeBoas(bits)
+        var veb = constructorVanEmdeBoas(bits)
         val list = (0 until n).toVector
-        val boas = list.foldLeft(veb) { case (boas: vanEmdeBoas, i: Int) =>
-            boas.insert(i)
+        veb  = list.foldLeft(veb) { case (boas: vanEmdeBoas, i: Int) =>
+          boas.insert(i)
         }
         val listToRemove = list
-        val endBoas = listToRemove.foldLeft(boas) {
+        veb = listToRemove.foldLeft(veb) {
           case (boas: vanEmdeBoas, i: Int) => boas.delete(i)
         }
-        endBoas.toSeq should have length 0
+        veb.toSeq should have length 0
       }
 
     }
-
 
 
   }
