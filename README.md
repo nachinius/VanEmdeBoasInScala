@@ -18,7 +18,7 @@ A van Emde Boas data strucuture that achieves O(lg lg n) (w.h.p) predecessor and
 - [x] Do performance tests for Immutable Version
 - [x] Compare performance between mutable and immutable 
 - [x] Write predecessor  
-- [ ] Augment the structure
+- [ ] Augment the data structure
 - [ ] Add delete
 - [ ] Use Long instead of Int
 

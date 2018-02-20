@@ -23,6 +23,8 @@ sealed trait ImmutableVanEmdeBoas extends vanEmdeBoas {
   require(maxNumber > 0, s"maxNumber should be positive, current $maxNumber for $bits, $halfbits, $lowerbits")
 
   override def insert(x: T): vanEmdeBoas
+
+  override def delete(x: T): vanEmdeBoas = this
 }
 
 case class Main[S <: vanEmdeBoas](
