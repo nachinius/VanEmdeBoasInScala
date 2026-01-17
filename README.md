@@ -51,6 +51,64 @@ where **n = 2^w** is the maximum number that can be stored.
 - fully tested
 - with benchmarks code 
 
+### Running Benchmarks
+
+This project includes comprehensive benchmarks to measure performance and memory consumption of the Van Emde Boas tree implementation.
+
+For detailed information about benchmarks, see [BENCHMARKS.md](BENCHMARKS.md).
+
+#### Quick Start
+
+Use the provided scripts to run benchmarks easily:
+
+```bash
+# List all available benchmarks
+./list-benchmarks.sh
+
+# Run all benchmarks
+./run-benchmarks.sh
+
+# Run specific benchmark types
+./run-benchmarks.sh performance   # Performance benchmarks only
+./run-benchmarks.sh memory        # Memory benchmarks only
+./run-benchmarks.sh comparison    # Mutable vs Immutable comparison
+```
+
+#### Using SBT Directly
+
+You can also run benchmarks using sbt commands:
+
+```bash
+# Run all benchmarks
+sbt "bench:test"
+
+# Run specific benchmark suites
+sbt "bench:testOnly *Performance*"        # Performance benchmarks
+sbt "bench:testOnly *Memory*"             # Memory benchmarks
+sbt "bench:testOnly *Comparision*"        # Comparison benchmarks
+
+# Run a specific benchmark class
+sbt "bench:testOnly com.nachinius.vanEmdeBoas.vanEmdeBoasAPerformance"
+```
+
+#### Available Benchmarks
+
+- **Performance Benchmarks** (`vanEmdeBoasAPerformance`)
+  - Insert operation vs data size
+  - Successor operation vs data size
+  - Successor operation vs bit size
+
+- **Memory Benchmarks** (`vanEmdeBoasAMemory`)
+  - Memory footprint vs data size and bit size
+
+- **Comparison Benchmarks** (Mutable vs Immutable)
+  - Performance comparison of successor operation
+  - Memory consumption comparison
+
+#### Benchmark Results
+
+Results are stored in the `tmp` directory after running benchmarks. The benchmarks use ScalaMeter framework for accurate measurements.
+
 ### References
 1. [MIT 6.851 Advanced Data Structures, Erik Demaine lecture 11](https://courses.csail.mit.edu/6.851/fall17/lectures/L11.html)
 
