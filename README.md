@@ -55,6 +55,8 @@ where **n = 2^w** is the maximum number that can be stored.
 
 This project includes comprehensive benchmarks to measure performance and memory consumption of the Van Emde Boas tree implementation.
 
+For detailed information about benchmarks, see [BENCHMARKS.md](BENCHMARKS.md).
+
 #### Quick Start
 
 Use the provided scripts to run benchmarks easily:
